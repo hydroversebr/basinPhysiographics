@@ -17,7 +17,7 @@ Este é uma iniciativa voluntária de alguns hidrólogos brasileiros e faz parte
 Você pode baixar e instalar a versão mais atualizada do pacote a partir desse diretório. O procedimento é:
 1. Instalar o pacote "devtools" (Você só precisa fazer isso uma vez. Note que serão instaladas várias dependências.)
 2. Carregar o pacote "devtools"
-3. Instalar o pacote hydrobr
+3. Instalar o pacote "basinDelimitationBR"
 
 Os comandos são:
 ``` R
