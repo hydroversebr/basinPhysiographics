@@ -7,7 +7,7 @@
   <span>Português</span> |
   <a href="https://github.com/hydroversebr/hydrobr">English</a>
 
-# hydrobr 
+# basinDelimitationBR
 
 ## Descrição
 
