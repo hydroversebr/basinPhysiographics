@@ -1,5 +1,4 @@
 
-<img align='right' src='https://github.com/hydroversebr/hydrobr/blob/main/man/figures/logo.png' width="100">
 
 <p align="center">
   <span>Português</span> |
