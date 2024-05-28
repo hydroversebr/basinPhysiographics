@@ -2,7 +2,7 @@
 
 <p align="center">
   <span>Português</span> |
-  <a href="https://github.com/hydroversebr/hydrobr">English</a>
+  <a href="https://github.com/hydroversebr/basinPhysiografics">English</a>
 
 # **basinPhysiografics**
 
