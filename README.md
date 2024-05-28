@@ -5,7 +5,7 @@
 
 <p align="center">
   <span>English</span> |
-  <a href="https://github.com/hydroversebr/hydrobr/tree/main/lang/portugues">Português</a>
+  <a href="https://github.com/hydroversebr/basinPhysiografics/tree/main/lang/portugues">Português</a>
 
 # **basinPhysiographics**
 
