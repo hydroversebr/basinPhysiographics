@@ -7,14 +7,14 @@
   <span>English</span> |
   <a href="https://github.com/hydroversebr/hydrobr/tree/main/lang/portugues">Português</a>
 
-# hydrobr 
+# **basinPhysiographics**
 
 
 ## Description
 
-The basinDelimitationBR package was developed to help users to obtain digital elevation subproducts and delimitate watershed basins.
+The ***basinPhysiographics*** package was developed to compile functions aimed at obtaining the physiographic characteristics of a territory, typically a basin in hydrology. Currently, the package assists users in obtaining digital elevation subproducts and delineating watershed basins.
 
-This is a voluntary initiative from a few Brazilian hydrologists and part of the <a href="https://github.com/hydroversebr/">hydroversebr</a>. The package improvement is open to enthusiasts. Contact us if you want to be part of the team and help us develop this project.
+This package is a voluntary initiative by a group of Brazilian hydrologists and is part of the <a href="https://github.com/hydroversebr/">hydroversebr</a> project. We welcome contributions from enthusiasts. If you're interested in joining the team and helping us develop this project, please contact us.
 
 ## Installing this package
 
@@ -27,12 +27,7 @@ The commands are:
 ``` R
 if (!require(devtools)) install.packages("devtools")
 library(devtools)
-install_github("hydroversebr/basinDelimitaionBR", build_vignettes = TRUE)
-```
-To read the vignettes and examples of how to use the package:
-
-``` R
-vignette(package = 'hydrobr', topic = 'intro_to_hydrobr')
+install_github("hydroversebr/basinPhysiographics")
 ```
 
 ## Contact
