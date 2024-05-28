@@ -4,11 +4,11 @@
   <span>Português</span> |
   <a href="https://github.com/hydroversebr/hydrobr">English</a>
 
-# basinDelimitationBR
+# **basinPhysiografics**
 
 ## Descrição
 
-O pacote basinDelimitationBR foi desenvolvido para ajudar os usuários a obter subprodutos de modelos digitais de elevação e delimitar bacia hidrográficas. Por favor, certifique-se de que os processamentos estejam corretos em seu estudo de caso por meio de uma verificação cruzada e nos informe.
+O pacote basinPhysiographics foi desenvolvido para compilar funções com objetivo de obter as características fisiográficas das bacias hidrográficas. Atualmente, o pacote auxilia os usuários na obtenção de subprodutos do modelo digital de elevação (DEM) e na delimitação de bacias hidrográficas.
 
 Este é uma iniciativa voluntária de alguns hidrólogos brasileiros e faz parte do <a href="https://github.com/hydroversebr/">hydroversebr</a>. O aprimoramento do pacote é aberto à entusiastas. Contate-nos se você quer fazer parte do time e ajude-nos a desenvolver esse projeto.
 
@@ -17,13 +17,13 @@ Este é uma iniciativa voluntária de alguns hidrólogos brasileiros e faz parte
 Você pode baixar e instalar a versão mais atualizada do pacote a partir desse diretório. O procedimento é:
 1. Instalar o pacote "devtools" (Você só precisa fazer isso uma vez. Note que serão instaladas várias dependências.)
 2. Carregar o pacote "devtools"
-3. Instalar o pacote "basinDelimitationBR"
+3. Instalar o pacote "basinPhysiografics"
 
 Os comandos são:
 ``` R
 if (!require(devtools)) install.packages("devtools")
 library(devtools)
-install_github("hydroversebr/basinDelimitationBR", build_vignettes = TRUE)
+install_github("hydroversebr/basinPhysiografics")
 ```
 
 
