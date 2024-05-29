@@ -1,22 +1,15 @@
-Package: hydrobr
-Title: Access to the Brazilian National Water Agency (Agência Nacional de Águas) hydrological data
+Package: Physiografics
+Title: Physiographic characteristics of watershed basins
 Version: 0.0.0.9000
 Authors@R: 
     c(person("Arthur", "Calegario", , "tcalegario@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-1921-5234")),
-      person("Daniel", "Althoff", , "daniel_althoff@hotmail.com", role = c("aut"),
-           comment = c(ORCID = "0000-0001-5390-575X")),
-      person("Artur", "Lourenço", , "artur.lourenco@ifpb.edu.br", role = c("ctb"),
-           comment = c(ORCID = "0000-0003-1999-2524")),
-      person("Roberto", "Filgueiras", , email = "betofilgueiras@gmail.com", role = c("ctb"),
-                    comment = c(ORCID = "0000-0002-0186-8907")))
-Description: Package developed to download, clean, and quality check hydrological
-    data freely available for Brazil and perform general hydrological analyses.
-    This work is a volunteer initiative from a few Brazilian hydrologists. 
-    (improve later).
+           comment = c(ORCID = "0000-0002-1921-5234")))
+Description: The basinPhysiographics package was developed to compile functions
+         aimed at obtaining the physiographic characteristics watershed basins. Currently,
+         the package assists users in obtaining digital elevation model (DEM) subproducts and
+         delineating watershed basins.
 License: GPL (>= 3)
-Imports: tibble, dplyr, tidyr, magrittr, stringr, lubridate, rlang, xml2, 
-    ggplot2, sf, terra, geobr, Kendall, randtests, reshape2, trend, whitebox, zoo, padr, plyr, openxlsx, chirps, gtools
+Imports: terra, dplyr, sf, whitebox
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1

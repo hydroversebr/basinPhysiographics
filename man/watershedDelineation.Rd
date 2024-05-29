@@ -80,7 +80,6 @@ watershedDelineation(
 )
 
 }
-
 }
 \references{
 whitetoolbox package (https://cran.r-project.org/web/packages/whitebox/index.html)

@@ -71,7 +71,7 @@
 #')
 #'
 #'}
-#'
+#' @importFrom dplyr %>%
 #' @export
 
 
@@ -320,4 +320,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("areakm2",
                                                         "area_km2p",
                                                         'Watersheds_nested',
                                                         'geometry',
-                                                        'sttn_cd'))
+                                                        'sttn_cd',
+                                                        'station_code',
+                                                        'a_km2p_nest',
+                                                        'ar_km2p',
+                                                        'are_km2',
+                                                        '.'))
