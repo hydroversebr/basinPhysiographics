@@ -1,8 +1,6 @@
 [![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental) 
 [![license](https://img.shields.io/badge/license-GPL3-lightgrey.svg)](https://choosealicense.com/)
 
-<img align='right' src='https://github.com/hydroversebr/hydrobr/blob/main/man/figures/logo.png' width="100">
-
 <p align="center">
   <span>English</span> |
   <a href="https://github.com/hydroversebr/basinPhysiografics/tree/main/lang/portugues">Português</a>
