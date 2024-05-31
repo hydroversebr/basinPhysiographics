@@ -32,5 +32,29 @@ install_github("hydroversebr/basinPhysiografics")
 <div> 
   <a href = "mailto:hydroversebr@gmail.com; tcalegario@gmail.com; daniel_althoff@hotmail.com;"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" target="_blank"></a>
 
-![](https://komarev.com/ghpvc/?username=hydrobr)
+
+<div>
+  <a href="https://www.youtube.com/@hydroversebr"><img src="https://img.shields.io/badge/YouTube-red?style=for-the-badge&logo=youtube&logoColor=white"></a>
+</div>
+
+
+<div>
+  <a href="https://www.instagram.com/hydroversebr/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
+</div>
+
+## Palavras-chave
+
+declividade mde
+
+aspecto mde
+
+modelo digital de elevação hidrologicamente consistente
+
+modelo digital de elevação hidrograficamente consistente
+
+delimitação de bacias R
+
+##
+
+![](https://komarev.com/ghpvc/?username=basinPhysiografics)
 
