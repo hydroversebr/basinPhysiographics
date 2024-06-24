@@ -9,7 +9,7 @@ Description: The basinPhysiographics package was developed to compile functions
          the package assists users in obtaining digital elevation model (DEM) subproducts and
          delineating watershed basins.
 License: GPL (>= 3)
-Imports: terra, dplyr, sf, whitebox
+Imports: terra, dplyr, sf, whitebox, XML
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
