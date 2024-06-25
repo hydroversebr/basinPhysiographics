@@ -10,7 +10,7 @@
 
 ## Description
 
-The ***basinPhysiographics*** package was developed to compile functions aimed at obtaining the physiographic characteristics watershed basins. Currently, the package assists users in obtaining digital elevation model (DEM) subproducts and delineating watershed basins.
+The ***basinPhysiographics*** package was developed to compile functions aimed at obtaining the physiographic characteristics watershed basins. Currently, the package assists users in obtaining Copernicus digital elevation model (DEM), DEM subproducts and delineating watershed basins.
 
 This package is a voluntary initiative by a group of Brazilian hydrologists and is part of the <a href="https://github.com/hydroversebr/">hydroversebr</a> project. We welcome contributions from enthusiasts. If you're interested in joining the team and helping us develop this project, please contact us.
 
@@ -44,6 +44,8 @@ install_github("hydroversebr/basinPhysiographics")
 </div>
 
 ## Key-words
+
+Copernicus DEM download R
 
 dem slope R
 
