@@ -8,7 +8,7 @@
 
 ## Descrição
 
-O pacote ***basinPhysiographics*** foi desenvolvido para compilar funções com objetivo de obter as características fisiográficas das bacias hidrográficas. Atualmente, o pacote auxilia os usuários na obtenção de subprodutos do modelo digital de elevação (DEM) e na delimitação de bacias hidrográficas.
+O pacote ***basinPhysiographics*** foi desenvolvido para compilar funções com objetivo de obter as características fisiográficas das bacias hidrográficas. Atualmente, o pacote auxilia os usuários na obtenção do modelo digital de elevação Copernicus, subprodutos do MDE e na delimitação de bacias hidrográficas.
 
 Este é uma iniciativa voluntária de alguns hidrólogos brasileiros e faz parte do <a href="https://github.com/hydroversebr/">hydroversebr</a>. O aprimoramento do pacote é aberto à entusiastas. Contate-nos se você quer fazer parte do time e ajude-nos a desenvolver esse projeto.
 
@@ -44,13 +44,15 @@ install_github("hydroversebr/basinPhysiografics")
 
 ## Palavras-chave
 
-declividade mde
+download MDE Copernicus R
 
-aspecto mde
+declividade mde R
 
-modelo digital de elevação hidrologicamente consistente
+aspecto mde R
 
-modelo digital de elevação hidrograficamente consistente
+modelo digital de elevação hidrologicamente consistente R
+
+modelo digital de elevação hidrograficamente consistente R
 
 delimitação de bacias R
 
