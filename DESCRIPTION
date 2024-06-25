@@ -6,7 +6,7 @@ Authors@R:
            comment = c(ORCID = "0000-0002-1921-5234")))
 Description: The basinPhysiographics package was developed to compile functions
          aimed at obtaining the physiographic characteristics watershed basins. Currently,
-         the package assists users in obtaining digital elevation model (DEM) subproducts and
+         the package assists users in download Copernicus digital elevation model (DEM) obtaining DEM subproducts and
          delineating watershed basins.
 License: GPL (>= 3)
 Imports: terra, dplyr, sf, whitebox, XML
