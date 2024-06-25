@@ -65,7 +65,8 @@ downloadCopernicusDem = function(aoi,
     "`keepInvidualTiles` parameter must be logical" = is.logical(keepInvidualTiles))
 
 
-
+  aoi = aoi %>%
+    sf::st_transform(4326)
 
   #identify grid lat long----
 
@@ -102,8 +103,7 @@ downloadCopernicusDem = function(aoi,
   shp = sf::st_read(shp, quiet = T)
 
   #mask gridshape by aoi
-  gridDem = sf::st_intersection(shp, aoi %>%
-                              sf::st_transform(4326)) %>%
+  gridDem = sf::st_intersection(shp, aoi) %>%
     suppressWarnings()
 
   #get gridshape code
