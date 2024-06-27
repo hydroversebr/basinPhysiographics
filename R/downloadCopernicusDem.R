@@ -16,6 +16,15 @@
 #'
 #' Digital elevation model for area of interest
 #'
+#'@details
+#'
+#'Bielski, C.; López-Vázquez, C.; Grohmann, C.H.; Guth. P.L.; Hawker, L.; Gesch, D.; Trevisani, S.; Herrera-Cruz, V.; Riazanoff, S.; Corseaux, A.; Reuter, H.; Strobl, P., 2024.
+#'Novel approach for ranking DEMs: Copernicus DEM improves one arc second open global topography. IEEE Transactions on Geoscience & Remote Sensing.
+#'https://ieeexplore.ieee.org/document/10440392
+#'
+#'
+#'European Space Agency, Sinergise (2021). Copernicus Global Digital Elevation Model. Distributed by OpenTopography. https://doi.org/10.5069/G9028PQB. Accessed: 2024-06-27
+#'
 #' @export
 #'
 #'
