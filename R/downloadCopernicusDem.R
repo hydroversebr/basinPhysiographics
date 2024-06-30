@@ -69,7 +69,7 @@ downloadCopernicusDem = function(aoi,
     "`outputFileName` parameter must be character indicating dem output filename with '.tif' extension (i.e `copernicusDem.tif`)" = is.character(outputFileName),
     "`res` must be numeric vector indicating dem resolution (30 ou 90)" = res %in% c(30,90),
     "`type` must be character vector indicating Copernicus dem data type ('DGED' or 'DTED')" = type %in% c("DGED", "DTED"),
-    "`aoi` must be a polygon of class `SpatVector` (terra package)" = "sf" %in% class(aoi),
+    "`aoi` must be a polygon of class `sf` (sf package)" = "sf" %in% class(aoi),
     "`tempDir` parameter must be character indicating temporary directory name (i.e `tempDirDem`)" = is.character(tempDir),
     "`keepInvidualTiles` parameter must be logical" = is.logical(keepInvidualTiles))
 
@@ -98,7 +98,7 @@ downloadCopernicusDem = function(aoi,
 
   #unzip
   utils::unzip(zipfile = paste0(outputDirTempFile, "/copDemGrid.zip"),
-        exdir = paste0(outputDirTempFile))
+               exdir = paste0(outputDirTempFile))
 
   #delete zip file
   unlink(paste0(outputDirTempFile, "/copDemGrid.zip"))
@@ -120,7 +120,7 @@ downloadCopernicusDem = function(aoi,
     dplyr::pull(GeoCellID) %>%
     dplyr::as_tibble() %>%
     dplyr::mutate(lat = substr(.$value, 0,3),
-           long = substr(.$value, 4,7))
+                  long = substr(.$value, 4,7))
 
 
 
@@ -159,11 +159,11 @@ downloadCopernicusDem = function(aoi,
   fileNames = df_data %>%
     dplyr::as_tibble() %>%
     dplyr::mutate(ordem = 1:dplyr::n(),
-           gridCode = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/Copernicus_DSM_", value, "_"),
-                           replacement = "", .$text),
-           nome = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/"),
-                       replacement = "",
-                       x = .$text)) %>%
+                  gridCode = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/Copernicus_DSM_", value, "_"),
+                                  replacement = "", .$text),
+                  nome = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/"),
+                              replacement = "",
+                              x = .$text)) %>%
     dplyr::filter(grepl(paste(long,collapse="|"), x = .$gridCode)) %>%
     dplyr::filter(grepl(paste(lat,collapse="|"), x = .$gridCode))
 
@@ -218,11 +218,18 @@ downloadCopernicusDem = function(aoi,
 
   print("Merging tiles")
 
-  d = list.files(outputDirTempFile, full.names = T, pattern = ".tif", recursive = T)
+  d = list.files(outputDirTempFile, full.names = T, pattern = ".tif$", recursive = T)
 
-  rsrc <- terra::sprc(d)
+  if(length(d)>1){
 
-  finalDem = terra::mosaic(rsrc)
+    rsrc <- terra::sprc(d)
+
+    finalDem = terra::mosaic(rsrc)
+
+  } else {
+
+    finalDem = terra::rast(d)
+  }
 
   finalDem = terra::mask(terra::crop(finalDem, aoi), aoi)
 
