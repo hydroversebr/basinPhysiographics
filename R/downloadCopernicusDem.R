@@ -9,7 +9,7 @@
 #' @param outputFileName character. Output filename with '.tiff' extension. default = 'copernicusDem.tif'.
 #' @param res numeric. desired resolution (30 or 90 meters). default = 90.
 #' @param type character. Copernicus DEM product. Default = 'DGED'.
-#' @param tempDir character. Temporary directory folder name. Default = 'tempDirDem'.
+#' @param outputDirTempFile character. Temporary directory folder name. Default = 'tempDirDem'.
 #' @param keepInvidualTiles logical. Keep downloaded tiles?. Default = FALSE.
 #'
 #' @return
@@ -42,7 +42,7 @@
 #'                            outputFileName = "copernicusDem.tif",
 #'                            res = 90,
 #'                            type = "DGED",
-#'                            tempDir = "tempDirDem",
+#'                            outputDirTempFile = "./tempDirDem",
 #'                            keepInvidualTiles = FALSE)
 #'
 #'}
@@ -57,7 +57,7 @@ downloadCopernicusDem = function(aoi,
                                  outputFileName = "copernicusDem.tif",
                                  res = 90,
                                  type = "DGED",
-                                 tempDir = "tempDirDem",
+                                 outputDirTempFile = "./copernicusDem/tempDirDem",
                                  keepInvidualTiles = FALSE){
 
 
@@ -70,7 +70,7 @@ downloadCopernicusDem = function(aoi,
     "`res` must be numeric vector indicating dem resolution (30 ou 90)" = res %in% c(30,90),
     "`type` must be character vector indicating Copernicus dem data type ('DGED' or 'DTED')" = type %in% c("DGED", "DTED"),
     "`aoi` must be a polygon of class `sf` (sf package)" = "sf" %in% class(aoi),
-    "`tempDir` parameter must be character indicating temporary directory name (i.e `tempDirDem`)" = is.character(tempDir),
+    "`tempDir` parameter must be character indicating temporary directory name (i.e `tempDirDem`)" = is.character(outputDirTempFile),
     "`keepInvidualTiles` parameter must be logical" = is.logical(keepInvidualTiles))
 
 
@@ -79,7 +79,7 @@ downloadCopernicusDem = function(aoi,
 
   #identify grid lat long----
 
-  outputDirTempFile = paste0(outputDir, "/outputDirTemp1234")
+  #outputDirTempFile = paste0(outputDir, "/outputDirTemp1234")
 
   #create folder
   dir.create(outputDir, recursive = T, showWarnings = F)
@@ -198,7 +198,7 @@ downloadCopernicusDem = function(aoi,
 
   fileToDelete = list.files(outputDirTempFile, recursive = T)
 
-  demFiles = list.files(outputDirTempFile, recursive = T, pattern = "DEM.tif", full.names = T)
+  demFiles = list.files(outputDirTempFile, recursive = T, pattern = "DEM.tif$", full.names = T)
 
   if(keepInvidualTiles == TRUE){
 
