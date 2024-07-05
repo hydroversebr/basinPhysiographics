@@ -10,7 +10,7 @@ downloadCopernicusDem(
   outputFileName = "copernicusDem.tif",
   res = 90,
   type = "DGED",
-  tempDir = "tempDirDem",
+  outputDirTempFile = "./copernicusDem/tempDirDem",
   keepInvidualTiles = FALSE
 )
 }
@@ -25,7 +25,7 @@ downloadCopernicusDem(
 
 \item{type}{character. Copernicus DEM product. Default = 'DGED'.}
 
-\item{tempDir}{character. Temporary directory folder name. Default = 'tempDirDem'.}
+\item{outputDirTempFile}{character. Temporary directory folder name. Default = 'tempDirDem'.}
 
 \item{keepInvidualTiles}{logical. Keep downloaded tiles?. Default = FALSE.}
 }
@@ -56,7 +56,7 @@ dem = downloadCopernicusDem(aoi = area_of_interest,
                            outputFileName = "copernicusDem.tif",
                            res = 90,
                            type = "DGED",
-                           tempDir = "tempDirDem",
+                           outputDirTempFile = "./tempDirDem",
                            keepInvidualTiles = FALSE)
 
 }
