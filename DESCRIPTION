@@ -2,8 +2,18 @@ Package: basinPhysiographics
 Title: Physiographic characteristics of watershed basins
 Version: 0.0.0.9000
 Authors@R: 
-    c(person("Arthur", "Calegario", , "tcalegario@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-1921-5234")))
+    c(person(
+    given = "Arthur",
+    family = "Calegario",
+    email = "tcalegario@gmail.com",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0000-0002-1921-5234")),
+      person(
+      given = "Elpídio",
+      family = "Fernandes Filho",
+      email = "elpidio.solos@gmail.com",
+      role = c("aut"),
+      comment = c(ORCID = "0000-0003-2440-8329")))
 Description: The basinPhysiographics package was developed to compile functions
          aimed at obtaining the physiographic characteristics watershed basins. Currently,
          the package assists users in download Copernicus digital elevation model (DEM) obtaining DEM subproducts and
