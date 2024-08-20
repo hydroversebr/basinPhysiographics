@@ -13,11 +13,11 @@ downloadCopernicusDemElps(
   outputDirTempFile = "./copernicusDem/tempDirDem",
   keepInvidualTiles = FALSE,
   timeout = 1000,
-  ncores = 1,
+  ncores = future::availableCores() - 2,
   saveAsInteger = FALSE,
   multiplier = 1,
   showRaster = FALSE,
-  retry = 0
+  retry = 5
 )
 }
 \arguments{

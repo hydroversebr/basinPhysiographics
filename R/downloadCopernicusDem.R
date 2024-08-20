@@ -67,18 +67,18 @@
 #
 
 downloadCopernicusDemElps <- function(aoi,
-                                      outputDir = "./copernicusDem",
-                                      outputFileName = "copernicusDem.tif",
+                                      outputDir,
+                                      outputFileName,
                                       res = 90,
                                       type = "DGED",
                                       outputDirTempFile = "./copernicusDem/tempDirDem",
                                       keepInvidualTiles = FALSE,
                                       timeout = 1000,
-                                      ncores = 1,
+                                      ncores = future::availableCores()-2,
                                       saveAsInteger = FALSE,
                                       multiplier = 1,
                                       showRaster = FALSE,  #
-                                      retry = 0) {
+                                      retry = 5) {
 
   # Verificações iniciais
   stopifnot(
