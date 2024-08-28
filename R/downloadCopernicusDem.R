@@ -175,6 +175,14 @@ downloadCopernicusDem <- function(aoi,
 
   finalGrid = paste(lat,"00", long, "00", sep = "_")
 
+  # atualização de ncores se necessário
+
+  if (length(finalGrid) < ncores){
+
+    ncores = length(finalGrid)
+
+  }
+
   # Listagem dos arquivos HTTP para download
   print("Listing 'http' files to download")
 
