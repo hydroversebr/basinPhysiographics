@@ -1,4 +1,4 @@
-#' downloadCopernicusDemElps
+#' downloadCopernicusDem
 #'
 #' @description
 #' Downloads the Copernicus Digital Elevation Model (DEM) for a specified area of interest (AOI).
@@ -49,7 +49,7 @@
 #' \dontrun{
 #' require(sf)
 #' area_of_interest <- st_read("./area_of_interest.shp")
-#' dem <- downloadCopernicusDemElps(aoi = area_of_interest,
+#' dem <- downloadCopernicusDem(aoi = area_of_interest,
 #'                              outputDir = "./copernicusDem",
 #'                              outputFileName = "copernicusDem.tif",
 #'                              res = 90,
@@ -66,7 +66,7 @@
 #'
 #
 
-downloadCopernicusDemElps <- function(aoi,
+downloadCopernicusDem <- function(aoi,
                                       outputDir,
                                       outputFileName,
                                       res = 90,
