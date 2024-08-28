@@ -173,6 +173,8 @@ downloadCopernicusDem <- function(aoi,
   long <- gridCode %>%
     dplyr::pull(long)
 
+  finalGrid = paste(lat,"00", long, "00", sep = "_")
+
   # Listagem dos arquivos HTTP para download
   print("Listing 'http' files to download")
 
@@ -212,11 +214,11 @@ downloadCopernicusDem <- function(aoi,
       dplyr::mutate(ordem = 1:dplyr::n(),
                     gridCode = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/Copernicus_DSM_", value, "_"),
                                     replacement = "", .$text),
+                    gridCode = gsub(pattern = ".tar", replacement = "", gridCode),
                     nome = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/"),
                                 replacement = "",
                                 x = .$text)) %>%
-      dplyr::filter(grepl(paste(long, collapse = "|"), x = .$gridCode)) %>%
-      dplyr::filter(grepl(paste(lat, collapse = "|"), x = .$gridCode))
+      dplyr::filter(gridCode %in% finalGrid)
   }, error = function(e) {
     stop("Error processing file names: ", e$message)
   })
