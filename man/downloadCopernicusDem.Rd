@@ -2,88 +2,50 @@
 % Please edit documentation in R/downloadCopernicusDem.R
 \name{downloadCopernicusDem}
 \alias{downloadCopernicusDem}
-\title{downloadCopernicusDem}
+\title{Baixar e processar MDE para uma área de interesse}
 \usage{
 downloadCopernicusDem(
-  aoi,
-  outputDir,
-  outputFileName,
-  res = 90,
-  type = "DGED",
-  outputDirTempFile = "./copernicusDem/tempDirDem",
-  keepInvidualTiles = FALSE,
-  timeout = 1000,
-  ncores = future::availableCores() - 2,
-  saveAsInteger = FALSE,
-  multiplier = 1,
-  showRaster = FALSE,
-  retry = 5
+  roi,
+  dir_saida = "../mde",
+  n_tentativas = 50,
+  n_cores = 18,
+  sobrescrever = FALSE,
+  recortar_roi = TRUE
 )
 }
 \arguments{
-\item{aoi}{sf object. The area of interest for which the DEM is to be downloaded.}
+\item{roi}{Região de interesse. Pode ser:
+\itemize{
+\item Caminho para shapefile (ex: "limites/area.shp")
+\item Código de estado brasileiro (ex: "ES", "MG")
+\item Objeto sf ou SpatVector
+}}
 
-\item{outputDir}{character. The directory where the output files will be saved. Default is './copernicusDem'.}
+\item{dir_saida}{Diretório onde os dados serão salvos}
 
-\item{outputFileName}{character. The name of the output file with a '.tiff' extension. Default is 'copernicusDem.tif'.}
+\item{n_tentativas}{Número de tentativas de download}
 
-\item{res}{numeric. The desired resolution of the DEM, either 30 or 90 meters. Default is 90.}
+\item{n_cores}{Número de cores para processamento paralelo}
 
-\item{type}{character. The type of Copernicus DEM product. Default is 'DGED'.}
+\item{sobrescrever}{Sobrescrever arquivos existentes?}
 
-\item{outputDirTempFile}{character. The directory for temporary files during the download process. Default is './copernicusDem/tempDirDem'.}
-
-\item{keepInvidualTiles}{logical. Whether to keep the individual downloaded tiles. Default is FALSE.}
-
-\item{timeout}{numeric. The timeout in seconds for each download attempt. Default is 600.}
-
-\item{ncores}{numeric. The number of processor cores to use for parallelizing the download operation. Default is 1 (no parallelization).}
-
-\item{saveAsInteger}{logical. Whether to save the final raster as an integer. Default is FALSE.}
-
-\item{multiplier}{numeric. A multiplier to apply to the data before converting to integer. Default is 1.}
-
-\item{showRaster}{logical. Whether to plot the final raster. Default is FALSE.}
-
-\item{retry}{numeric. The number of retry attempts for failed downloads. Default is 0 (no retries).}
+\item{recortar_roi}{Recortar o MDE final pelos limites exatos da ROI?}
 }
 \value{
-An sf object containing the digital elevation model for the specified area of interest.
+Caminho para o arquivo MDE final
 }
 \description{
-Downloads the Copernicus Digital Elevation Model (DEM) for a specified area of interest (AOI).
-This function supports parallel processing to expedite the download of individual tiles and includes
-error handling to manage any issues that may arise during the download process.
-}
-\details{
-This function downloads the Copernicus Digital Elevation Model (DEM) for a specified area of interest (AOI).
-It identifies the necessary tiles based on the AOI, downloads them in parallel (if specified), and merges them into a single DEM file.
-The function includes error handling to manage any issues that arise during the download process, ensuring robustness.
+Baixar e processar MDE para uma área de interesse
 }
 \examples{
-\dontrun{
-require(sf)
-area_of_interest <- st_read("./area_of_interest.shp")
-dem <- downloadCopernicusDem(aoi = area_of_interest,
-                             outputDir = "./copernicusDem",
-                             outputFileName = "copernicusDem.tif",
-                             res = 90,
-                             type = "DGED",
-                             outputDirTempFile = "./tempDirDem",
-                             keepInvidualTiles = FALSE,
-                             timeout = 600,
-                             ncores = 1,
-                             saveAsInteger = FALSE,
-                             multiplier = 1,
-                             showRaster = FALSE,
-                             retry = 3)
-}
+# Usando código de estado
+processar_mde("ES", "../mde")
 
-}
-\references{
-Bielski, C.; López-Vázquez, C.; Grohmann, C.H.; Guth. P.L.; Hawker, L.; Gesch, D.; Trevisani, S.; Herrera-Cruz, V.; Riazanoff, S.; Corseaux, A.; Reuter, H.; Strobl, P., 2024.
-Novel approach for ranking DEMs: Copernicus DEM improves one arc second open global topography. IEEE Transactions on Geoscience & Remote Sensing.
-https://ieeexplore.ieee.org/document/10440392
+# Usando shapefile
+processar_mde("limites/bacia.shp", "../mde")
 
-European Space Agency, Sinergise (2021). Copernicus Global Digital Elevation Model. Distributed by OpenTopography. https://doi.org/10.5069/G9028PQB. Accessed: 2024-06-27
+# Usando objeto sf
+area_sf <- sf::st_read("minha_area.shp")
+processar_mde(area_sf, "../mde")
+
 }

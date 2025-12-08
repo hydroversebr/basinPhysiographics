@@ -20,7 +20,8 @@
 #'
 #'
 #' @export
-#'
+#' @importFrom utils download.file
+#' @importFrom sf st_transform
 #' @examples
 #'
 #'

@@ -1,407 +1,269 @@
-#' downloadCopernicusDem
+#' Baixar e processar MDE para uma área de interesse
 #'
-#' @description
-#' Downloads the Copernicus Digital Elevation Model (DEM) for a specified area of interest (AOI).
-#' This function supports parallel processing to expedite the download of individual tiles and includes
-#' error handling to manage any issues that may arise during the download process.
+#' @param roi Região de interesse. Pode ser:
+#'   - Caminho para shapefile (ex: "limites/area.shp")
+#'   - Código de estado brasileiro (ex: "ES", "MG")
+#'   - Objeto sf ou SpatVector
+#' @param dir_saida Diretório onde os dados serão salvos
+#' @param n_tentativas Número de tentativas de download
+#' @param n_cores Número de cores para processamento paralelo
+#' @param sobrescrever Sobrescrever arquivos existentes?
+#' @param recortar_roi Recortar o MDE final pelos limites exatos da ROI?
 #'
-#' @param aoi sf object. The area of interest for which the DEM is to be downloaded.
-#' @param outputDir character. The directory where the output files will be saved. Default is './copernicusDem'.
-#' @param outputFileName character. The name of the output file with a '.tiff' extension. Default is 'copernicusDem.tif'.
-#' @param res numeric. The desired resolution of the DEM, either 30 or 90 meters. Default is 90.
-#' @param type character. The type of Copernicus DEM product. Default is 'DGED'.
-#' @param outputDirTempFile character. The directory for temporary files during the download process. Default is './copernicusDem/tempDirDem'.
-#' @param keepInvidualTiles logical. Whether to keep the individual downloaded tiles. Default is FALSE.
-#' @param timeout numeric. The timeout in seconds for each download attempt. Default is 600.
-#' @param ncores numeric. The number of processor cores to use for parallelizing the download operation. Default is 1 (no parallelization).
-#' @param saveAsInteger logical. Whether to save the final raster as an integer. Default is FALSE.
-#' @param multiplier numeric. A multiplier to apply to the data before converting to integer. Default is 1.
-#' @param showRaster logical. Whether to plot the final raster. Default is FALSE.
-#' @param retry numeric. The number of retry attempts for failed downloads. Default is 0 (no retries).
-#'
-#' @return
-#' An sf object containing the digital elevation model for the specified area of interest.
-#'
-#' @details
-#' This function downloads the Copernicus Digital Elevation Model (DEM) for a specified area of interest (AOI).
-#' It identifies the necessary tiles based on the AOI, downloads them in parallel (if specified), and merges them into a single DEM file.
-#' The function includes error handling to manage any issues that arise during the download process, ensuring robustness.
-#'
-#' @references
-#' Bielski, C.; López-Vázquez, C.; Grohmann, C.H.; Guth. P.L.; Hawker, L.; Gesch, D.; Trevisani, S.; Herrera-Cruz, V.; Riazanoff, S.; Corseaux, A.; Reuter, H.; Strobl, P., 2024.
-#' Novel approach for ranking DEMs: Copernicus DEM improves one arc second open global topography. IEEE Transactions on Geoscience & Remote Sensing.
-#' https://ieeexplore.ieee.org/document/10440392
-#'
-#' European Space Agency, Sinergise (2021). Copernicus Global Digital Elevation Model. Distributed by OpenTopography. https://doi.org/10.5069/G9028PQB. Accessed: 2024-06-27
-#'
-#' @importFrom sf st_transform st_read st_intersection
-#' @importFrom dplyr pull as_tibble mutate filter n
-#' @importFrom utils download.file unzip untar
-#' @importFrom XML xmlParse xmlToDataFrame
-#' @importFrom terra sprc mosaic rast mask crop writeRaster
-#' @importFrom future.apply future_lapply
-#' @importFrom future plan multisession sequential
-#' @importFrom graphics plot
-#' @importFrom progressr handlers progressor with_progress
-#' @export
+#' @return Caminho para o arquivo MDE final
 #'
 #' @examples
-#' \dontrun{
-#' require(sf)
-#' area_of_interest <- st_read("./area_of_interest.shp")
-#' dem <- downloadCopernicusDem(aoi = area_of_interest,
-#'                              outputDir = "./copernicusDem",
-#'                              outputFileName = "copernicusDem.tif",
-#'                              res = 90,
-#'                              type = "DGED",
-#'                              outputDirTempFile = "./tempDirDem",
-#'                              keepInvidualTiles = FALSE,
-#'                              timeout = 600,
-#'                              ncores = 1,
-#'                              saveAsInteger = FALSE,
-#'                              multiplier = 1,
-#'                              showRaster = FALSE,
-#'                              retry = 3)
-#' }
+#' # Usando código de estado
+#' processar_mde("ES", "../mde")
 #'
-#
+#' # Usando shapefile
+#' processar_mde("limites/bacia.shp", "../mde")
+#'
+#' # Usando objeto sf
+#' area_sf <- sf::st_read("minha_area.shp")
+#' processar_mde(area_sf, "../mde")
+#'
 
-downloadCopernicusDem <- function(aoi,
-                                      outputDir,
-                                      outputFileName,
-                                      res = 90,
-                                      type = "DGED",
-                                      outputDirTempFile = "./copernicusDem/tempDirDem",
-                                      keepInvidualTiles = FALSE,
-                                      timeout = 6000,
-                                      ncores = future::availableCores()-2,
-                                      saveAsInteger = FALSE,
-                                      multiplier = 1,
-                                      showRaster = FALSE,  #
-                                      retry = 10) {
+downloadCopernicusDem <- function(roi,
+                                  dir_saida = "../mde",
+                                  n_tentativas = 50,
+                                  n_cores = 18,
+                                  sobrescrever = FALSE,
+                                  recortar_roi = TRUE) {
 
-  # Verificações iniciais
-  stopifnot(
-    "`outputDir` parameter must be character indicating output folder path (i.e `./copernicusDem`)" = is.character(outputDir),
-    "`outputFileName` parameter must be character indicating dem output filename with '.tif' extension (i.e `copernicusDem.tif`)" = is.character(outputFileName),
-    "`res` must be numeric vector indicating dem resolution (30 ou 90)" = res %in% c(30, 90),
-    "`type` must be character vector indicating Copernicus dem data type ('DGED' ou 'DTED')" = type %in% c("DGED", "DTED"),
-    "`aoi` must be a polygon of class `sf` (sf package)" = "sf" %in% class(aoi),
-    "`tempDir` parameter must be character indicating temporary directory name (i.e `tempDirDem`)" = is.character(outputDirTempFile),
-    "`keepInvidualTiles` parameter must be logical" = is.logical(keepInvidualTiles),
-    "`saveAsInteger` parameter must be logical" = is.logical(saveAsInteger),
-    "`multiplier` parameter must be numeric" = is.numeric(multiplier),
-    "`showRaster` parameter must be logical" = is.logical(showRaster),
-    "`retry` parameter must be numeric indicating the number of retry attempts for failed downloads" = is.numeric(retry)
+  # Validações de entrada ------------------------------------------------
+
+  if (missing(roi) || is.null(roi)) {
+    stop("Parâmetro 'roi' é obrigatório")
+  }
+
+  if (!is.numeric(n_tentativas) || n_tentativas < 1) {
+    stop("n_tentativas deve ser um número inteiro positivo")
+  }
+
+  if (!is.numeric(n_cores) || n_cores < 1) {
+    stop("n_cores deve ser um número inteiro positivo")
+  }
+
+  # Criar diretório de saída se não existir
+  if (!dir.exists(dir_saida)) {
+    message(sprintf("Criando diretório: %s", dir_saida))
+    dir.create(dir_saida, recursive = TRUE, showWarnings = FALSE)
+  } else {
+    message(sprintf("Usando diretório existente: %s", dir_saida))
+  }
+
+  # 1. Carregar ROI ------------------------------------------------------
+
+  message("\n[1/5] Carregando região de interesse...")
+
+  roi_sf <- load_roi(roi)
+  nome_area <- attr(roi_sf, "nome_area")
+
+  # Criar nome de arquivo seguro
+  nome_arquivo_seguro <- gsub("[^a-zA-Z0-9_-]", "_", nome_area)
+
+  # Verificar se arquivo final já existe
+  arquivo_final <- file.path(dir_saida, sprintf("%s_mde_merge.tif", nome_arquivo_seguro))
+
+  if (file.exists(arquivo_final) && !sobrescrever) {
+    message(sprintf("Arquivo já existe: %s", arquivo_final))
+    resposta <- readline("Deseja sobrescrever? (s/n): ")
+    if (tolower(resposta) != "s") {
+      message("Operação cancelada pelo usuário")
+      return(invisible(arquivo_final))
+    }
+  }
+
+  # 2. Criar cubo de dados -----------------------------------------------
+
+  message("\n[2/5] Criando cubo de dados do Copernicus DEM...")
+
+  cubo <- tryCatch({
+    sits::sits_cube(
+      source     = "MPC",
+      collection = "COP-DEM-GLO-30",
+      bands      = "ELEVATION",
+      roi        = roi_sf
+    )
+  }, error = function(e) {
+    stop(sprintf("Erro ao criar cubo: %s", e$message))
+  })
+
+  if (is.null(cubo)) {
+    stop("Falha ao criar cubo de dados")
+  }
+
+  message(sprintf("Cubo criado com sucesso: %d tile(s) encontrado(s)", nrow(cubo)))
+
+  # 3. Baixar tiles ------------------------------------------------------
+
+  message(sprintf("\n[3/5] Baixando tiles (tentativas: %d, cores: %d)...",
+                  n_tentativas, n_cores))
+  message("Isso pode demorar dependendo do tamanho da área e velocidade da internet...")
+
+  download_sucesso <- tryCatch({
+    sits::sits_cube_copy(
+      cube       = cubo,
+      n_tries    = n_tentativas,
+      multicores = n_cores,
+      roi        = roi_sf,
+      output_dir = dir_saida
+    )
+    TRUE
+  }, error = function(e) {
+    warning(sprintf("Erro durante download: %s", e$message))
+    FALSE
+  })
+
+  if (!download_sucesso) {
+    stop("Falha no download dos tiles")
+  }
+
+  # 4. Processar e mesclar tiles -----------------------------------------
+
+  message("\n[4/5] Processando e mesclando tiles...")
+
+  # Listar arquivos .tif (excluir arquivo final se já existir)
+  tiles_mde <- list.files(dir_saida, pattern = "\\.tif$", full.names = TRUE)
+  tiles_mde <- tiles_mde[!grepl("_mde_merge\\.tif$", tiles_mde)]
+
+  if (length(tiles_mde) == 0) {
+    stop(sprintf("Nenhum arquivo .tif encontrado em: %s", dir_saida))
+  }
+
+  message(sprintf("Encontrados %d arquivo(s) .tif", length(tiles_mde)))
+
+  # Verificar se há apenas um tile
+  if (length(tiles_mde) == 1) {
+    message("Apenas um tile encontrado, carregando diretamente...")
+    mde_mesclado <- terra::rast(tiles_mde[1])
+
+  } else {
+    message("Mesclando múltiplos tiles...")
+
+    # Criar coleção espacial de rasters
+    tiles_sprc <- tryCatch({
+      terra::sprc(tiles_mde)
+    }, error = function(e) {
+      stop(sprintf("Erro ao criar coleção de rasters: %s", e$message))
+    })
+
+    # Mesclar tiles
+    mde_mesclado <- tryCatch({
+      terra::merge(tiles_sprc)
+    }, error = function(e) {
+      stop(sprintf("Erro ao mesclar tiles: %s", e$message))
+    })
+  }
+
+  # 5. Recortar pela ROI (opcional) --------------------------------------
+
+  if (recortar_roi) {
+    message("\n[5/5] Recortando MDE pelos limites da ROI...")
+
+    # Converter sf para SpatVector
+    roi_vect <- terra::vect(roi_sf)
+
+    # Recortar e mascarar
+    mde_final <- tryCatch({
+      terra::crop(mde_mesclado, roi_vect)
+      terra::mask(mde_mesclado, roi_vect)
+    }, error = function(e) {
+      warning(sprintf("Erro ao recortar MDE: %s. Usando MDE completo.", e$message))
+      mde_mesclado
+    })
+
+  } else {
+    message("\n[5/5] Pulando recorte (recortar_roi = FALSE)")
+    mde_final <- mde_mesclado
+  }
+
+  # Salvar resultado -----------------------------------------------------
+
+  message(sprintf("Salvando MDE final em: %s", arquivo_final))
+
+  terra::writeRaster(
+    mde_final,
+    arquivo_final,
+    overwrite = TRUE,
+    gdal = c("COMPRESS=LZW", "PREDICTOR=2", "TILED=YES")
   )
 
-  unlink(outputDirTempFile, recursive = T, force = TRUE)
-  unlink(outputDir, recursive = T, force = TRUE)
-  tryCatch({
-    aoi <- sf::st_transform(aoi, 4326)
-  }, error = function(e) {
-    stop("Error transforming AOI to EPSG:4326: ", e$message)
-  })
+  # Resumo final ---------------------------------------------------------
 
-  # Criação de diretórios
-  tryCatch({
-    dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
-    dir.create(outputDirTempFile, showWarnings = FALSE)
-  }, error = function(e) {
-    stop("Error creating directories: ", e$message)
-  })
+  message("\n========================================")
+  message("PROCESSAMENTO CONCLUÍDO COM SUCESSO!")
+  message("========================================")
+  message(sprintf("Área: %s", nome_area))
+  message(sprintf("Arquivo final: %s", arquivo_final))
+  message(sprintf("Dimensões: %d x %d pixels",
+                  terra::nrow(mde_final),
+                  terra::ncol(mde_final)))
+  message(sprintf("Resolução: %.6f x %.6f graus",
+                  terra::res(mde_final)[1],
+                  terra::res(mde_final)[2]))
 
-  # Download dos dados de grade do Copernicus DEM
-  print("Downloading Copernicus DEM Grid tiles")
+  # Calcular resolução em metros no centro da área
+  centro_lat <- mean(terra::ext(mde_final)[3:4])
+  res_m_x <- terra::res(mde_final)[1] * 111320 * cos(centro_lat * pi/180)
+  res_m_y <- terra::res(mde_final)[2] * 111320
+  message(sprintf("Resolução aproximada: %.1f x %.1f metros", res_m_x, res_m_y))
 
-  tryCatch({
-    utils::download.file(
-      "https://github.com/hydroversebr/miscellaneous/blob/main/copDemGrid.zip?raw=TRUE",
-      paste0(outputDirTempFile, "/copDemGrid.zip"),
-      mode = "wb", quiet = TRUE
-    )
-  }, error = function(e) {
-    stop("Error downloading Copernicus DEM Grid tiles: ", e$message)
-  })
+  message(sprintf("Extensão: %.6f, %.6f, %.6f, %.6f (xmin, xmax, ymin, ymax)",
+                  terra::ext(mde_final)[1],
+                  terra::ext(mde_final)[2],
+                  terra::ext(mde_final)[3],
+                  terra::ext(mde_final)[4]))
 
-  # Descompactação
-  tryCatch({
-    utils::unzip(zipfile = paste0(outputDirTempFile, "/copDemGrid.zip"),
-                 exdir = paste0(outputDirTempFile))
-    unlink(paste0(outputDirTempFile, "/copDemGrid.zip"))
-  }, error = function(e) {
-    stop("Error unzipping Copernicus DEM Grid tiles: ", e$message)
-  })
+  elevacao_stats <- terra::global(mde_final, c("min", "max", "mean"), na.rm = TRUE)
+  message(sprintf("Elevação mín: %.1f m", elevacao_stats[1, "min"]))
+  message(sprintf("Elevação máx: %.1f m", elevacao_stats[1, "max"]))
+  message(sprintf("Elevação média: %.1f m", elevacao_stats[1, "mean"]))
 
-  # Identificação dos tiles na área de interesse
-  print("Identifing tiles at 'aoi'")
+  # Tamanho do arquivo
+  tamanho_mb <- file.size(arquivo_final) / 1024^2
+  message(sprintf("Tamanho do arquivo: %.2f MB", tamanho_mb))
 
-  shp <- tryCatch({
-    list.files(outputDirTempFile, full.names = TRUE, pattern = ".shp")
-  }, error = function(e) {
-    stop("Error identifying gridshape files: ", e$message)
-  })
+  message("========================================\n")
 
-  # Leitura do shapefile
-  shp <- tryCatch({
-    sf::st_read(shp, quiet = TRUE)
-  }, error = function(e) {
-    stop("Error reading gridshape files: ", e$message)
-  })
 
-  # Interseção do grid com a área de interesse
-  gridDem <- tryCatch({
-    suppressWarnings(sf::st_intersection(shp, aoi))
-  }, error = function(e) {
-    stop("Error intersecting gridshape with AOI: ", e$message)
-  })
 
-  # Extração dos códigos dos tiles
-  gridCode <- tryCatch({
-    gridDem %>%
-      dplyr::pull(GeoCellID) %>%
-      dplyr::as_tibble() %>%
-      dplyr::mutate(lat = substr(.$value, 0, 3),
-                    long = substr(.$value, 4, 7))
-  }, error = function(e) {
-    stop("Error extracting gridshape codes: ", e$message)
-  })
 
-  lat <- gridCode %>%
-    dplyr::pull(lat)
+  limpar_tiles <- function(dir_saida, manter_merge = TRUE) {
 
-  long <- gridCode %>%
-    dplyr::pull(long)
-
-  finalGrid = paste(lat,"00", long, "00", sep = "_")
-
-  # atualização de ncores se necessário
-
-  if (length(finalGrid) < ncores){
-
-    ncores = length(finalGrid)
-
-  }
-
-  # Listagem dos arquivos HTTP para download
-  print("Listing 'http' files to download")
-
-  # Download dos nomes dos arquivos HTTP
-  xmlDownload <- paste0("COP-DEM_GLO-", res, "-", type, "__2023_1")
-
-  tryCatch({
-    utils::download.file(
-      paste0("https://github.com/hydroversebr/miscellaneous/blob/main/", xmlDownload, "?raw=TRUE"),
-      paste0(outputDirTempFile, "/arquivos.xml"),
-      mode = "wb", quiet = TRUE
-    )
-  }, error = function(e) {
-    stop("Error downloading HTTP file names: ", e$message)
-  })
-
-  # Conversão de XML para DataFrame
-  data <- tryCatch({
-    XML::xmlParse(paste0(outputDirTempFile, "/arquivos.xml"))
-  }, error = function(e) {
-    stop("Error parsing XML file: ", e$message)
-  })
-
-  df_data <- tryCatch({
-    XML::xmlToDataFrame(data)
-  }, error = function(e) {
-    stop("Error converting XML to DataFrame: ", e$message)
-  })
-
-  # Código para renomear arquivos
-  value <- if (res == 30) 10 else 30
-
-  # DataFrame com nomes HTTP, ordem, gridCode e nome do arquivo
-  fileNames <- tryCatch({
-    df_data %>%
-      dplyr::as_tibble() %>%
-      dplyr::mutate(ordem = 1:dplyr::n(),
-                    gridCode = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/Copernicus_DSM_", value, "_"),
-                                    replacement = "", .$text),
-                    gridCode = gsub(pattern = ".tar", replacement = "", gridCode),
-                    nome = gsub(pattern = paste0("https://prism-dem-open.copernicus.eu/pd-desk-open-access/prismDownload/COP-DEM_GLO-", res, "-", type, "__2023_1/"),
-                                replacement = "",
-                                x = .$text)) %>%
-      dplyr::filter(gridCode %in% finalGrid)
-  }, error = function(e) {
-    stop("Error processing file names: ", e$message)
-  })
-
-  # Função para baixar tiles com lógica de retry
-  download_tiles_with_retry <- function(indices, retry, timeout, outputDirTempFile, fileNames) {
-    results <- future.apply::future_lapply(indices, function(i) {
-      p()
-      download_tile(i, timeout, outputDirTempFile, fileNames)
-    })
-
-    failed_downloads <- which(sapply(results, function(x) x$status == "download_failed"))
-
-    failed_untar <- which(sapply(results, function(x) x$status == "untar_failed"))
-
-    for (attempt in 1:retry) {
-      if (length(failed_downloads) == 0 && length(failed_untar) == 0) break
-      if (length(failed_downloads) > 0) {
-        #message(paste("Retrying download for tiles:", paste(failed_downloads, collapse = ", ")))
-        results[failed_downloads] <- future.apply::future_lapply(failed_downloads, function(i) {
-          download_tile(i, timeout, outputDirTempFile, fileNames)
-        })
-        failed_downloads <- which(sapply(results, function(x) x$status == "download_failed"))
-      }
-      if (length(failed_untar) > 0) {
-        #message(paste("Retrying untar for tiles:", paste(failed_untar, collapse = ", ")))
-        results[failed_untar] <- future.apply::future_lapply(failed_untar, function(i) {
-          download_tile(i, timeout, outputDirTempFile, fileNames)
-        })
-        failed_untar <- which(sapply(results, function(x) x$status == "untar_failed"))
-      }
+    if (!dir.exists(dir_saida)) {
+      warning(sprintf("Diretório não existe: %s", dir_saida))
+      return(invisible(NULL))
     }
 
-    list(results = results, failed_downloads = failed_downloads, failed_untar = failed_untar)
-  }
+    todos_arquivos <- list.files(dir_saida, pattern = "\\.tif$", full.names = TRUE)
+    arquivos_merge <- list.files(dir_saida, pattern = "_mde_merge\\.tif$", full.names = TRUE)
 
-  # Configuração de processamento paralelo ou sequencial
-  if (ncores > 1) {
-    future::plan(future::multisession, workers = ncores)
-    print(paste("Downloading", nrow(fileNames), "tiles in parallel using", ncores, "cores"))
-  } else {
-    future::plan(future::sequential)
-    print("Downloading tiles sequentially")
-  }
-
-  start_time <- Sys.time()
-
-  # Use progressr para adicionar uma barra de progresso
-  progressr::handlers("txtprogressbar")
-  progressr::with_progress({
-    p <- progressr::progressor(along = 1:nrow(fileNames))
-    download_results <- suppressWarnings(
-      download_tiles_with_retry(1:nrow(fileNames), retry, timeout, outputDirTempFile, fileNames)
-    )
-  })
-
-  end_time <- Sys.time()
-  duration <- as.numeric(difftime(end_time, start_time, units = "mins"))
-
-  # Verifique se houve falhas no download
-  if (length(download_results$failed_downloads) > 0) {
-    warning("Some tiles failed to download: ", paste(download_results$failed_downloads, collapse = ", "))
-  }
-  if (length(download_results$failed_untar) > 0) {
-    warning("Some tiles failed to untar: ", paste(download_results$failed_untar, collapse = ", "))
-  }
-
-  num_downloaded <- sum(sapply(download_results$results, function(x) x$status == "success"))
-  print(paste("Downloaded", num_downloaded, "out of", nrow(fileNames), "tiles in", round(duration, 2), "minutes"))
-
-  # Deletar ou não os tiles individuais
-  fileToDelete <- list.files(outputDirTempFile, recursive = TRUE)
-  demFiles <- list.files(outputDirTempFile, recursive = TRUE, pattern = "DEM.tif$", full.names = TRUE)
-
-  if (keepInvidualTiles) {
-    newDemFiles <- gsub(pattern = ".*DEM/",
-                        replacement = paste0(outputDir, "/tilesCopernicusDem/"),
-                        x = demFiles)
-    tryCatch({
-      dir.create(paste0(outputDir, "/tilesCopernicusDem"), showWarnings = FALSE)
-      file.copy(from = demFiles, to = newDemFiles)
-    }, error = function(e) {
-      warning("Error copying individual tiles: ", e$message)
-    })
-  }
-
-  # Mesclar DEM
-  print("Merging tiles")
-
-  finalDem <- tryCatch({
-    d <- list.files(outputDirTempFile, full.names = TRUE, pattern = ".tif$", recursive = TRUE)
-    if (length(d) > 1) {
-      rsrc <- terra::sprc(d)
-      terra::mosaic(rsrc)
+    if (manter_merge && length(arquivos_merge) > 0) {
+      arquivos_deletar <- setdiff(todos_arquivos, arquivos_merge)
     } else {
-      terra::rast(d)
+      arquivos_deletar <- todos_arquivos
     }
-  }, error = function(e) {
-    stop("Error merging tiles: ", e$message)
-  })
 
-  finalDem <- tryCatch({
-    terra::mask(terra::crop(finalDem, aoi), aoi)
-  }, error = function(e) {
-    stop("Error cropping and masking DEM: ", e$message)
-  })
+    if (length(arquivos_deletar) == 0) {
+      message("Nenhum arquivo para deletar")
+      return(invisible(NULL))
+    }
 
-  # Aplicar multiplicador e converter para inteiro se especificado
-  if (saveAsInteger) {
-    finalDem <- tryCatch({
-      finalDem <- finalDem * multiplier
-      finalDem <- round(finalDem)
-      finalDem
-    }, error = function(e) {
-      stop("Error converting DEM to integer: ", e$message)
-    })
+    message(sprintf("Deletando %d arquivo(s)...", length(arquivos_deletar)))
+
+    sucesso <- file.remove(arquivos_deletar)
+
+    message(sprintf("Deletados: %d arquivo(s)", sum(sucesso)))
+
+    return(invisible(sum(sucesso)))
   }
 
-  # Exportar DEM e deletar arquivos temporários
-  tryCatch({
-    if (saveAsInteger) {
-      terra::writeRaster(finalDem, paste0(outputDir, "/", outputFileName), datatype = "INT2S", overwrite = TRUE)
-    } else {
-      terra::writeRaster(finalDem, paste0(outputDir, "/", outputFileName), overwrite = TRUE)
-    }
-    unlink(outputDirTempFile, force = TRUE, recursive = TRUE)
-    gc()
-  }, error = function(e) {
-    stop("Error writing final DEM to file: ", e$message)
-  })
 
-  # Plotar o raster final se especificado
-  if (showRaster) {  # Usando o novo nome do parâmetro
-    tryCatch({
-      terra::plot(finalDem)
-    }, error = function(e) {
-      warning("Error plotting final DEM: ", e$message)
-    })
-  }
+  limpar_tiles(dir_saida, manter_merge = TRUE)
 
-  print("Job Complete")
-  future::plan(future::sequential)
-  return(finalDem)
+  return(invisible(arquivo_final))
+
+
 }
-
-
-download_tile <- function(i, timeout, outputDirTempFile, fileNames) {
-  options(timeout = timeout)
-  destfile <- paste(outputDirTempFile, "/", fileNames$nome[i], sep = "")
-  tryCatch({
-    # Download do arquivo
-    utils::download.file(fileNames$text[i], destfile = destfile, mode = "wb", quiet = TRUE)
-
-    # Extrair o nome do arquivo sem a extensão .tar
-    nome <- gsub(fileNames$nome[i], pattern = ".tar", replacement = "")
-
-    # Descompactar o arquivo e capturar avisos como erros
-    result <- tryCatch({
-      utils::untar(destfile, files = paste0(nome, "/DEM/", nome, "_DEM.tif"), exdir = paste0(outputDirTempFile, "/outputs"))
-      list(status = "success")
-    }, warning = function(w) {
-      list(status = "untar_failed")
-    }, error = function(e) {
-      list(status = "untar_failed")
-    })
-
-    # Remover o arquivo .tar baixado
-    unlink(destfile)
-
-    return(result)
-  }, error = function(e) {
-    return(list(status = "download_failed"))
-  })
-}
-
-
-if (getRversion() >= "2.15.1") utils::globalVariables(c("GeoCellID"))
-

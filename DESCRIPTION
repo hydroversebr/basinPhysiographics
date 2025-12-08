@@ -19,10 +19,17 @@ Description: The basinPhysiographics package was developed to compile functions
          the package assists users in download Copernicus digital elevation model (DEM) obtaining DEM subproducts and
          delineating watershed basins.
 License: GPL (>= 3)
-Imports: terra, dplyr, sf, whitebox, XML, future, future.apply, progressr, zip
+Imports: 
+    terra,
+    dplyr,
+    sf,
+    whitebox,
+    zip,
+    geobr,
+    sits
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     rmarkdown,
