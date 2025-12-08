@@ -23,6 +23,7 @@
 #' area_sf <- sf::st_read("minha_area.shp")
 #' processar_mde(area_sf, "../mde")
 #'
+#' @export
 
 downloadCopernicusDem <- function(roi,
                                   dir_saida = "../mde",

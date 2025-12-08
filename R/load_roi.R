@@ -9,6 +9,8 @@
 #'
 #' @return Objeto sf com a geometria da ROI
 #' @importFrom sf st_transform
+#'
+#' @export
 load_roi <- function(roi_input) {
 
   # Caso 1: Caminho para arquivo shapefile
