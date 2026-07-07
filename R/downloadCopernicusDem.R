@@ -67,14 +67,14 @@ downloadCopernicusDem <- function(roi,
   # Verificar se arquivo final já existe
   arquivo_final <- file.path(dir_saida, sprintf("%s_mde_merge.tif", nome_arquivo_seguro))
 
-  if (file.exists(arquivo_final) && !sobrescrever) {
-    message(sprintf("Arquivo já existe: %s", arquivo_final))
-    resposta <- readline("Deseja sobrescrever? (s/n): ")
-    if (tolower(resposta) != "s") {
-      message("Operação cancelada pelo usuário")
-      return(invisible(arquivo_final))
-    }
-  }
+  # if (file.exists(arquivo_final) && !sobrescrever) {
+  #   message(sprintf("Arquivo já existe: %s", arquivo_final))
+  #   resposta <- readline("Deseja sobrescrever? (s/n): ")
+  #   if (tolower(resposta) != "s") {
+  #     message("Operação cancelada pelo usuário")
+  #     return(invisible(arquivo_final))
+  #   }
+  # }
 
   # 2. Criar cubo de dados -----------------------------------------------
 
